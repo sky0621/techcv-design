@@ -2,6 +2,7 @@
 
 - 正式な OpenAPI 定義は `openapi.yaml` を参照
 - このファイルは API の読み物向けサマリー
+- 認証方式の採用理由は `auth-strategy.md` を参照
 
 ## OpenAPI風の前提
 
