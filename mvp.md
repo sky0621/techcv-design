@@ -101,3 +101,5 @@
 
 - 画面一覧は `screens.md` を参照
 - エンティティ設計、想定リレーション、設計メモは `entities.md` を参照
+- API一覧は `apis.md` を参照
+- 正式な API 定義は `openapi.yaml` を参照

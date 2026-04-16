@@ -1,0 +1,2162 @@
+openapi: 3.1.0
+info:
+  title: TechCV Resume Management API
+  version: 0.1.0
+  summary: MVP API for individual web engineer career/resume management
+  description: |
+    個人のWebエンジニア向け経歴書管理システムのMVP APIです。
+    案件中心で経歴を管理し、応募先ごとの経歴書バリエーション作成と出力を提供します。
+servers:
+  - url: /api
+    description: Relative API base path
+security:
+  - BearerAuth: []
+  - SessionAuth: []
+tags:
+  - name: Auth
+  - name: Profile
+  - name: EmploymentHistory
+  - name: Project
+  - name: ProjectContribution
+  - name: Skill
+  - name: ResumeVariant
+  - name: Export
+  - name: Dashboard
+  - name: Master
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register user
+      operationId: registerUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              basic:
+                value:
+                  email: me@example.com
+                  password: strong-password
+                  displayName: sky0621
+      responses:
+        '201':
+          description: Registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              examples:
+                success:
+                  value:
+                    user:
+                      id: user_01
+                      email: me@example.com
+                      displayName: sky0621
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T00:00:00Z'
+                    accessToken: jwt-token-example
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      operationId: loginUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              basic:
+                value:
+                  email: me@example.com
+                  password: strong-password
+      responses:
+        '200':
+          description: Logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              examples:
+                success:
+                  value:
+                    user:
+                      id: user_01
+                      email: me@example.com
+                      displayName: sky0621
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T00:00:00Z'
+                    accessToken: jwt-token-example
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout
+      operationId: logoutUser
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user]
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+              examples:
+                success:
+                  value:
+                    user:
+                      id: user_01
+                      email: me@example.com
+                      displayName: sky0621
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T00:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /profile:
+    get:
+      tags: [Profile]
+      summary: Get profile
+      operationId: getProfile
+      responses:
+        '200':
+          description: Profile
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [profile]
+                properties:
+                  profile:
+                    $ref: '#/components/schemas/Profile'
+              examples:
+                success:
+                  value:
+                    profile:
+                      id: profile_01
+                      userId: user_01
+                      fullName: Sky Sample
+                      nickname: sky0621
+                      location: Tokyo
+                      email: me@example.com
+                      phone: '090-0000-0000'
+                      summary: Web engineer focused on product development.
+                      githubUrl: https://github.com/sky0621
+                      zennUrl: https://zenn.dev/sky0621
+                      qiitaUrl: https://qiita.com/sky0621
+                      websiteUrl: https://example.com
+                      preferredWorkStyle: Full remote
+                      visibilitySettings:
+                        email: false
+                        phone: false
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T00:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      tags: [Profile]
+      summary: Update profile
+      operationId: updateProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateRequest'
+            examples:
+              basic:
+                value:
+                  fullName: Sky Sample
+                  nickname: sky0621
+                  location: Tokyo
+                  email: me@example.com
+                  phone: '090-0000-0000'
+                  summary: Web engineer focused on product development.
+                  githubUrl: https://github.com/sky0621
+                  preferredWorkStyle: Full remote
+                  visibilitySettings:
+                    email: false
+                    phone: false
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [profile]
+                properties:
+                  profile:
+                    $ref: '#/components/schemas/Profile'
+              examples:
+                success:
+                  value:
+                    profile:
+                      id: profile_01
+                      userId: user_01
+                      fullName: Sky Sample
+                      nickname: sky0621
+                      location: Tokyo
+                      email: me@example.com
+                      phone: '090-0000-0000'
+                      summary: Web engineer focused on product development.
+                      githubUrl: https://github.com/sky0621
+                      zennUrl: https://zenn.dev/sky0621
+                      qiitaUrl: https://qiita.com/sky0621
+                      websiteUrl: https://example.com
+                      preferredWorkStyle: Full remote
+                      visibilitySettings:
+                        email: false
+                        phone: false
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T01:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /employment-histories:
+    get:
+      tags: [EmploymentHistory]
+      summary: List employment histories
+      operationId: listEmploymentHistories
+      responses:
+        '200':
+          description: Employment histories
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [employmentHistories]
+                properties:
+                  employmentHistories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EmploymentHistory'
+              examples:
+                success:
+                  value:
+                    employmentHistories:
+                      - id: emp_01
+                        userId: user_01
+                        companyName: Example Inc.
+                        employmentType: Full-time
+                        startDate: '2022-04-01'
+                        endDate: null
+                        note: Main employer
+                        sortOrder: 1
+                        createdAt: '2025-04-16T00:00:00Z'
+                        updatedAt: '2025-04-16T00:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [EmploymentHistory]
+      summary: Create employment history
+      operationId: createEmploymentHistory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmploymentHistoryUpsertRequest'
+            examples:
+              basic:
+                value:
+                  companyName: Example Inc.
+                  employmentType: Full-time
+                  startDate: '2022-04-01'
+                  endDate: null
+                  note: Main employer
+                  sortOrder: 1
+      responses:
+        '201':
+          description: Created employment history
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [employmentHistory]
+                properties:
+                  employmentHistory:
+                    $ref: '#/components/schemas/EmploymentHistory'
+              examples:
+                success:
+                  value:
+                    employmentHistory:
+                      id: emp_01
+                      userId: user_01
+                      companyName: Example Inc.
+                      employmentType: Full-time
+                      startDate: '2022-04-01'
+                      endDate: null
+                      note: Main employer
+                      sortOrder: 1
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T00:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /employment-histories/{employmentHistoryId}:
+    parameters:
+      - $ref: '#/components/parameters/EmploymentHistoryId'
+    get:
+      tags: [EmploymentHistory]
+      summary: Get employment history
+      operationId: getEmploymentHistory
+      responses:
+        '200':
+          description: Employment history detail
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [employmentHistory]
+                properties:
+                  employmentHistory:
+                    $ref: '#/components/schemas/EmploymentHistory'
+              examples:
+                success:
+                  value:
+                    employmentHistory:
+                      id: emp_01
+                      userId: user_01
+                      companyName: Example Inc.
+                      employmentType: Full-time
+                      startDate: '2022-04-01'
+                      endDate: null
+                      note: Main employer
+                      sortOrder: 1
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T00:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [EmploymentHistory]
+      summary: Update employment history
+      operationId: updateEmploymentHistory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmploymentHistoryUpsertRequest'
+            examples:
+              basic:
+                value:
+                  companyName: Example Inc.
+                  employmentType: Full-time
+                  startDate: '2022-04-01'
+                  endDate: null
+                  note: Main employer
+                  sortOrder: 1
+      responses:
+        '200':
+          description: Updated employment history
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [employmentHistory]
+                properties:
+                  employmentHistory:
+                    $ref: '#/components/schemas/EmploymentHistory'
+              examples:
+                success:
+                  value:
+                    employmentHistory:
+                      id: emp_01
+                      userId: user_01
+                      companyName: Example Inc.
+                      employmentType: Full-time
+                      startDate: '2022-04-01'
+                      endDate: null
+                      note: Main employer
+                      sortOrder: 1
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T01:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [EmploymentHistory]
+      summary: Delete employment history
+      operationId: deleteEmploymentHistory
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /projects:
+    get:
+      tags: [Project]
+      summary: List projects
+      operationId: listProjects
+      parameters:
+        - in: query
+          name: employmentHistoryId
+          schema:
+            type: string
+        - in: query
+          name: role
+          schema:
+            type: string
+        - in: query
+          name: skill
+          schema:
+            type: string
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [draft, published]
+        - in: query
+          name: sort
+          schema:
+            type: string
+            example: updatedAt:desc
+      responses:
+        '200':
+          description: Projects
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [projects]
+                properties:
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+              examples:
+                success:
+                  value:
+                    projects:
+                      - id: prj_01
+                        userId: user_01
+                        employmentHistoryId: emp_01
+                        name: TechCV Resume System
+                        startDate: '2024-01-01'
+                        endDate: null
+                        overview: Resume management product for web engineers
+                        role: Backend Engineer
+                        teamSize: 3
+                        status: draft
+                        sortOrder: 1
+                        createdAt: '2025-04-16T00:00:00Z'
+                        updatedAt: '2025-04-16T00:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Project]
+      summary: Create project
+      operationId: createProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectUpsertRequest'
+            examples:
+              basic:
+                value:
+                  employmentHistoryId: emp_01
+                  name: TechCV Resume System
+                  startDate: '2024-01-01'
+                  endDate: null
+                  overview: Resume management product for web engineers
+                  role: Backend Engineer
+                  teamSize: 3
+                  status: draft
+                  sortOrder: 1
+      responses:
+        '201':
+          description: Created project
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [project]
+                properties:
+                  project:
+                    $ref: '#/components/schemas/Project'
+              examples:
+                success:
+                  value:
+                    project:
+                      id: prj_01
+                      userId: user_01
+                      employmentHistoryId: emp_01
+                      name: TechCV Resume System
+                      startDate: '2024-01-01'
+                      endDate: null
+                      overview: Resume management product for web engineers
+                      role: Backend Engineer
+                      teamSize: 3
+                      status: draft
+                      sortOrder: 1
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T00:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /projects/{projectId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    get:
+      tags: [Project]
+      summary: Get project
+      operationId: getProject
+      responses:
+        '200':
+          description: Project detail
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [project, contributions, skills]
+                properties:
+                  project:
+                    $ref: '#/components/schemas/Project'
+                  contributions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProjectContribution'
+                  skills:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Skill'
+              examples:
+                success:
+                  value:
+                    project:
+                      id: prj_01
+                      userId: user_01
+                      employmentHistoryId: emp_01
+                      name: TechCV Resume System
+                      startDate: '2024-01-01'
+                      endDate: null
+                      overview: Resume management product for web engineers
+                      role: Backend Engineer
+                      teamSize: 3
+                      status: draft
+                      sortOrder: 1
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T00:00:00Z'
+                    contributions:
+                      - id: ctb_01
+                        projectId: prj_01
+                        phase: Design
+                        achievement: Defined initial API and data model
+                        improvement: Reduced rewrite cost
+                        note: Early MVP planning
+                        sortOrder: 1
+                        createdAt: '2025-04-16T00:00:00Z'
+                        updatedAt: '2025-04-16T00:00:00Z'
+                    skills:
+                      - id: skl_01
+                        userId: user_01
+                        name: Go
+                        category: Language
+                        proficiencyLevel: advanced
+                        yearsOfExperience: 4
+                        sourceType: project
+                        createdAt: '2025-04-16T00:00:00Z'
+                        updatedAt: '2025-04-16T00:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Project]
+      summary: Update project
+      operationId: updateProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectUpsertRequest'
+            examples:
+              basic:
+                value:
+                  employmentHistoryId: emp_01
+                  name: TechCV Resume System
+                  startDate: '2024-01-01'
+                  endDate: null
+                  overview: Resume management product for web engineers
+                  role: Backend Engineer
+                  teamSize: 4
+                  status: published
+                  sortOrder: 1
+      responses:
+        '200':
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [project]
+                properties:
+                  project:
+                    $ref: '#/components/schemas/Project'
+              examples:
+                success:
+                  value:
+                    project:
+                      id: prj_01
+                      userId: user_01
+                      employmentHistoryId: emp_01
+                      name: TechCV Resume System
+                      startDate: '2024-01-01'
+                      endDate: null
+                      overview: Resume management product for web engineers
+                      role: Backend Engineer
+                      teamSize: 4
+                      status: published
+                      sortOrder: 1
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T01:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Project]
+      summary: Delete project
+      operationId: deleteProject
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /projects/{projectId}/order:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    put:
+      tags: [Project]
+      summary: Update project order
+      operationId: updateProjectOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SortOrderRequest'
+            examples:
+              basic:
+                value:
+                  sortOrder: 1
+      responses:
+        '200':
+          description: Updated project order
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [project]
+                properties:
+                  project:
+                    $ref: '#/components/schemas/Project'
+              examples:
+                success:
+                  value:
+                    project:
+                      id: prj_01
+                      userId: user_01
+                      employmentHistoryId: emp_01
+                      name: TechCV Resume System
+                      startDate: '2024-01-01'
+                      endDate: null
+                      overview: Resume management product for web engineers
+                      role: Backend Engineer
+                      teamSize: 4
+                      status: published
+                      sortOrder: 1
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T01:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /projects/{projectId}/contributions:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    get:
+      tags: [ProjectContribution]
+      summary: List project contributions
+      operationId: listProjectContributions
+      responses:
+        '200':
+          description: Project contributions
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [contributions]
+                properties:
+                  contributions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProjectContribution'
+              examples:
+                success:
+                  value:
+                    contributions:
+                      - id: ctb_01
+                        projectId: prj_01
+                        phase: Design
+                        achievement: Defined initial API and data model
+                        improvement: Reduced rewrite cost
+                        note: Early MVP planning
+                        sortOrder: 1
+                        createdAt: '2025-04-16T00:00:00Z'
+                        updatedAt: '2025-04-16T00:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [ProjectContribution]
+      summary: Create project contribution
+      operationId: createProjectContribution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectContributionUpsertRequest'
+            examples:
+              basic:
+                value:
+                  phase: Design
+                  achievement: Defined initial API and data model
+                  improvement: Reduced rewrite cost
+                  note: Early MVP planning
+                  sortOrder: 1
+      responses:
+        '201':
+          description: Created contribution
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [contribution]
+                properties:
+                  contribution:
+                    $ref: '#/components/schemas/ProjectContribution'
+              examples:
+                success:
+                  value:
+                    contribution:
+                      id: ctb_01
+                      projectId: prj_01
+                      phase: Design
+                      achievement: Defined initial API and data model
+                      improvement: Reduced rewrite cost
+                      note: Early MVP planning
+                      sortOrder: 1
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T00:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /projects/{projectId}/contributions/{contributionId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/ContributionId'
+    put:
+      tags: [ProjectContribution]
+      summary: Update project contribution
+      operationId: updateProjectContribution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectContributionUpsertRequest'
+            examples:
+              basic:
+                value:
+                  phase: Implementation
+                  achievement: Implemented API endpoints
+                  improvement: Reduced lead time
+                  note: Added reusable patterns
+                  sortOrder: 1
+      responses:
+        '200':
+          description: Updated contribution
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [contribution]
+                properties:
+                  contribution:
+                    $ref: '#/components/schemas/ProjectContribution'
+              examples:
+                success:
+                  value:
+                    contribution:
+                      id: ctb_01
+                      projectId: prj_01
+                      phase: Implementation
+                      achievement: Implemented API endpoints
+                      improvement: Reduced lead time
+                      note: Added reusable patterns
+                      sortOrder: 1
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T01:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [ProjectContribution]
+      summary: Delete project contribution
+      operationId: deleteProjectContribution
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /skills:
+    get:
+      tags: [Skill]
+      summary: List skills
+      operationId: listSkills
+      parameters:
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: sourceType
+          schema:
+            type: string
+            enum: [manual, project]
+      responses:
+        '200':
+          description: Skills
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [skills]
+                properties:
+                  skills:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Skill'
+              examples:
+                success:
+                  value:
+                    skills:
+                      - id: skl_01
+                        userId: user_01
+                        name: Go
+                        category: Language
+                        proficiencyLevel: advanced
+                        yearsOfExperience: 4
+                        sourceType: project
+                        createdAt: '2025-04-16T00:00:00Z'
+                        updatedAt: '2025-04-16T00:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Skill]
+      summary: Create skill
+      operationId: createSkill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SkillUpsertRequest'
+            examples:
+              basic:
+                value:
+                  name: Go
+                  category: Language
+                  proficiencyLevel: advanced
+                  yearsOfExperience: 4
+                  sourceType: manual
+      responses:
+        '201':
+          description: Created skill
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [skill]
+                properties:
+                  skill:
+                    $ref: '#/components/schemas/Skill'
+              examples:
+                success:
+                  value:
+                    skill:
+                      id: skl_01
+                      userId: user_01
+                      name: Go
+                      category: Language
+                      proficiencyLevel: advanced
+                      yearsOfExperience: 4
+                      sourceType: manual
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T00:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /skills/{skillId}:
+    parameters:
+      - $ref: '#/components/parameters/SkillId'
+    get:
+      tags: [Skill]
+      summary: Get skill
+      operationId: getSkill
+      responses:
+        '200':
+          description: Skill detail
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [skill]
+                properties:
+                  skill:
+                    $ref: '#/components/schemas/Skill'
+              examples:
+                success:
+                  value:
+                    skill:
+                      id: skl_01
+                      userId: user_01
+                      name: Go
+                      category: Language
+                      proficiencyLevel: advanced
+                      yearsOfExperience: 4
+                      sourceType: manual
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T00:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Skill]
+      summary: Update skill
+      operationId: updateSkill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SkillUpsertRequest'
+            examples:
+              basic:
+                value:
+                  name: Go
+                  category: Language
+                  proficiencyLevel: expert
+                  yearsOfExperience: 5
+                  sourceType: manual
+      responses:
+        '200':
+          description: Updated skill
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [skill]
+                properties:
+                  skill:
+                    $ref: '#/components/schemas/Skill'
+              examples:
+                success:
+                  value:
+                    skill:
+                      id: skl_01
+                      userId: user_01
+                      name: Go
+                      category: Language
+                      proficiencyLevel: expert
+                      yearsOfExperience: 5
+                      sourceType: manual
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T01:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Skill]
+      summary: Delete skill
+      operationId: deleteSkill
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /projects/{projectId}/skills:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    put:
+      tags: [Skill]
+      summary: Replace project skills
+      operationId: replaceProjectSkills
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectSkillsReplaceRequest'
+            examples:
+              basic:
+                value:
+                  skillIds: [skl_01, skl_02]
+      responses:
+        '200':
+          description: Updated project skills
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [skills]
+                properties:
+                  skills:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Skill'
+              examples:
+                success:
+                  value:
+                    skills:
+                      - id: skl_01
+                        userId: user_01
+                        name: Go
+                        category: Language
+                        proficiencyLevel: expert
+                        yearsOfExperience: 5
+                        sourceType: manual
+                        createdAt: '2025-04-16T00:00:00Z'
+                        updatedAt: '2025-04-16T01:00:00Z'
+                      - id: skl_02
+                        userId: user_01
+                        name: PostgreSQL
+                        category: Database
+                        proficiencyLevel: intermediate
+                        yearsOfExperience: 3
+                        sourceType: manual
+                        createdAt: '2025-04-16T00:00:00Z'
+                        updatedAt: '2025-04-16T01:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /resume-variants:
+    get:
+      tags: [ResumeVariant]
+      summary: List resume variants
+      operationId: listResumeVariants
+      responses:
+        '200':
+          description: Resume variants
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [resumeVariants]
+                properties:
+                  resumeVariants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ResumeVariant'
+              examples:
+                success:
+                  value:
+                    resumeVariants:
+                      - id: rv_01
+                        userId: user_01
+                        name: Default Resume
+                        headline: Backend-focused web engineer
+                        summary: Resume for backend engineering roles
+                        visibilitySettings:
+                          phone: false
+                        createdAt: '2025-04-16T00:00:00Z'
+                        updatedAt: '2025-04-16T00:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [ResumeVariant]
+      summary: Create resume variant
+      operationId: createResumeVariant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResumeVariantUpsertRequest'
+            examples:
+              basic:
+                value:
+                  name: Default Resume
+                  headline: Backend-focused web engineer
+                  summary: Resume for backend engineering roles
+                  visibilitySettings:
+                    phone: false
+      responses:
+        '201':
+          description: Created resume variant
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [resumeVariant]
+                properties:
+                  resumeVariant:
+                    $ref: '#/components/schemas/ResumeVariant'
+              examples:
+                success:
+                  value:
+                    resumeVariant:
+                      id: rv_01
+                      userId: user_01
+                      name: Default Resume
+                      headline: Backend-focused web engineer
+                      summary: Resume for backend engineering roles
+                      visibilitySettings:
+                        phone: false
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T00:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /resume-variants/{resumeVariantId}:
+    parameters:
+      - $ref: '#/components/parameters/ResumeVariantId'
+    get:
+      tags: [ResumeVariant]
+      summary: Get resume variant
+      operationId: getResumeVariant
+      responses:
+        '200':
+          description: Resume variant detail
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [resumeVariant, projects]
+                properties:
+                  resumeVariant:
+                    $ref: '#/components/schemas/ResumeVariant'
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ResumeVariantProject'
+              examples:
+                success:
+                  value:
+                    resumeVariant:
+                      id: rv_01
+                      userId: user_01
+                      name: Default Resume
+                      headline: Backend-focused web engineer
+                      summary: Resume for backend engineering roles
+                      visibilitySettings:
+                        phone: false
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T00:00:00Z'
+                    projects:
+                      - resumeVariantId: rv_01
+                        projectId: prj_01
+                        sortOrder: 1
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [ResumeVariant]
+      summary: Update resume variant
+      operationId: updateResumeVariant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResumeVariantUpsertRequest'
+            examples:
+              basic:
+                value:
+                  name: Backend Resume
+                  headline: Backend-focused web engineer
+                  summary: Updated summary for backend roles
+                  visibilitySettings:
+                    phone: false
+                    email: true
+      responses:
+        '200':
+          description: Updated resume variant
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [resumeVariant]
+                properties:
+                  resumeVariant:
+                    $ref: '#/components/schemas/ResumeVariant'
+              examples:
+                success:
+                  value:
+                    resumeVariant:
+                      id: rv_01
+                      userId: user_01
+                      name: Backend Resume
+                      headline: Backend-focused web engineer
+                      summary: Updated summary for backend roles
+                      visibilitySettings:
+                        phone: false
+                        email: true
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T01:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [ResumeVariant]
+      summary: Delete resume variant
+      operationId: deleteResumeVariant
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /resume-variants/{resumeVariantId}/duplicate:
+    parameters:
+      - $ref: '#/components/parameters/ResumeVariantId'
+    post:
+      tags: [ResumeVariant]
+      summary: Duplicate resume variant
+      operationId: duplicateResumeVariant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DuplicateResumeVariantRequest'
+            examples:
+              basic:
+                value:
+                  name: Backend Resume Copy
+      responses:
+        '201':
+          description: Duplicated resume variant
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [resumeVariant]
+                properties:
+                  resumeVariant:
+                    $ref: '#/components/schemas/ResumeVariant'
+              examples:
+                success:
+                  value:
+                    resumeVariant:
+                      id: rv_02
+                      userId: user_01
+                      name: Backend Resume Copy
+                      headline: Backend-focused web engineer
+                      summary: Updated summary for backend roles
+                      visibilitySettings:
+                        phone: false
+                        email: true
+                      createdAt: '2025-04-16T02:00:00Z'
+                      updatedAt: '2025-04-16T02:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /resume-variants/{resumeVariantId}/projects:
+    parameters:
+      - $ref: '#/components/parameters/ResumeVariantId'
+    put:
+      tags: [ResumeVariant]
+      summary: Replace projects in resume variant
+      operationId: replaceResumeVariantProjects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResumeVariantProjectsReplaceRequest'
+            examples:
+              basic:
+                value:
+                  projects:
+                    - projectId: prj_01
+                      sortOrder: 1
+                    - projectId: prj_02
+                      sortOrder: 2
+      responses:
+        '200':
+          description: Updated resume variant projects
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [projects]
+                properties:
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ResumeVariantProject'
+              examples:
+                success:
+                  value:
+                    projects:
+                      - resumeVariantId: rv_01
+                        projectId: prj_01
+                        sortOrder: 1
+                      - resumeVariantId: rv_01
+                        projectId: prj_02
+                        sortOrder: 2
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /resume-variants/{resumeVariantId}/preview:
+    parameters:
+      - $ref: '#/components/parameters/ResumeVariantId'
+    get:
+      tags: [Export]
+      summary: Get preview data
+      operationId: getResumeVariantPreview
+      responses:
+        '200':
+          description: Preview data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumePreviewResponse'
+              examples:
+                success:
+                  value:
+                    profile:
+                      id: profile_01
+                      userId: user_01
+                      fullName: Sky Sample
+                      nickname: sky0621
+                      location: Tokyo
+                      email: me@example.com
+                      phone: '090-0000-0000'
+                      summary: Web engineer focused on product development.
+                      githubUrl: https://github.com/sky0621
+                      zennUrl: https://zenn.dev/sky0621
+                      qiitaUrl: https://qiita.com/sky0621
+                      websiteUrl: https://example.com
+                      preferredWorkStyle: Full remote
+                      visibilitySettings:
+                        email: false
+                        phone: false
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T01:00:00Z'
+                    employmentHistories:
+                      - id: emp_01
+                        userId: user_01
+                        companyName: Example Inc.
+                        employmentType: Full-time
+                        startDate: '2022-04-01'
+                        endDate: null
+                        note: Main employer
+                        sortOrder: 1
+                        createdAt: '2025-04-16T00:00:00Z'
+                        updatedAt: '2025-04-16T00:00:00Z'
+                    projects:
+                      - id: prj_01
+                        userId: user_01
+                        employmentHistoryId: emp_01
+                        name: TechCV Resume System
+                        startDate: '2024-01-01'
+                        endDate: null
+                        overview: Resume management product for web engineers
+                        role: Backend Engineer
+                        teamSize: 4
+                        status: published
+                        sortOrder: 1
+                        createdAt: '2025-04-16T00:00:00Z'
+                        updatedAt: '2025-04-16T01:00:00Z'
+                    skills:
+                      - id: skl_01
+                        userId: user_01
+                        name: Go
+                        category: Language
+                        proficiencyLevel: expert
+                        yearsOfExperience: 5
+                        sourceType: manual
+                        createdAt: '2025-04-16T00:00:00Z'
+                        updatedAt: '2025-04-16T01:00:00Z'
+                    resumeVariant:
+                      id: rv_01
+                      userId: user_01
+                      name: Backend Resume
+                      headline: Backend-focused web engineer
+                      summary: Updated summary for backend roles
+                      visibilitySettings:
+                        phone: false
+                        email: true
+                      createdAt: '2025-04-16T00:00:00Z'
+                      updatedAt: '2025-04-16T01:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /resume-variants/{resumeVariantId}/export/markdown:
+    parameters:
+      - $ref: '#/components/parameters/ResumeVariantId'
+    post:
+      tags: [Export]
+      summary: Export markdown
+      operationId: exportResumeVariantMarkdown
+      responses:
+        '200':
+          description: Markdown exported
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [markdown, fileName]
+                properties:
+                  markdown:
+                    type: string
+                  fileName:
+                    type: string
+              examples:
+                success:
+                  value:
+                    markdown: |
+                      # Sky Sample
+                      Backend-focused web engineer
+                    fileName: backend-resume.md
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /resume-variants/{resumeVariantId}/export/pdf:
+    parameters:
+      - $ref: '#/components/parameters/ResumeVariantId'
+    post:
+      tags: [Export]
+      summary: Export PDF
+      operationId: exportResumeVariantPdf
+      responses:
+        '200':
+          description: PDF exported
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+              examples:
+                success:
+                  summary: PDF binary stream
+                  value: JVBERi0xLjQKJ...
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Get dashboard summary
+      operationId: getDashboardSummary
+      responses:
+        '200':
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+              examples:
+                success:
+                  value:
+                    profileStatus: completed
+                    employmentHistoryCount: 1
+                    projectCount: 2
+                    skillCount: 8
+                    recentResumeVariants:
+                      - id: rv_01
+                        userId: user_01
+                        name: Backend Resume
+                        headline: Backend-focused web engineer
+                        summary: Updated summary for backend roles
+                        visibilitySettings:
+                          phone: false
+                          email: true
+                        createdAt: '2025-04-16T00:00:00Z'
+                        updatedAt: '2025-04-16T01:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /master/skill-categories:
+    get:
+      tags: [Master]
+      summary: List skill categories
+      operationId: listSkillCategories
+      responses:
+        '200':
+          description: Skill categories
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [categories]
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                success:
+                  value:
+                    categories: [Language, Framework, Infrastructure, Database, Tool]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /master/project-phases:
+    get:
+      tags: [Master]
+      summary: List project phases
+      operationId: listProjectPhases
+      responses:
+        '200':
+          description: Project phases
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [phases]
+                properties:
+                  phases:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                success:
+                  value:
+                    phases: [Requirement, Design, Implementation, Test, Operation]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    SessionAuth:
+      type: apiKey
+      in: cookie
+      name: session
+  parameters:
+    EmploymentHistoryId:
+      in: path
+      name: employmentHistoryId
+      required: true
+      schema:
+        type: string
+      example: emp_01
+    ProjectId:
+      in: path
+      name: projectId
+      required: true
+      schema:
+        type: string
+      example: prj_01
+    ContributionId:
+      in: path
+      name: contributionId
+      required: true
+      schema:
+        type: string
+      example: ctb_01
+    SkillId:
+      in: path
+      name: skillId
+      required: true
+      schema:
+        type: string
+      example: skl_01
+    ResumeVariantId:
+      in: path
+      name: resumeVariantId
+      required: true
+      schema:
+        type: string
+      example: rv_01
+  responses:
+    Ok:
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MessageResponse'
+          examples:
+            success:
+              value:
+                message: ok
+    Created:
+      description: Resource created successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MessageResponse'
+          examples:
+            success:
+              value:
+                message: created
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            invalid:
+              value:
+                code: bad_request
+                message: Validation failed
+                details:
+                  field: email
+                  reason: invalid format
+    Unauthorized:
+      description: Authentication required or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            unauthorized:
+              value:
+                code: unauthorized
+                message: Authentication required
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            notFound:
+              value:
+                code: not_found
+                message: Resource not found
+  schemas:
+    MessageResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+    User:
+      type: object
+      required: [id, email, displayName, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Profile:
+      type: object
+      required: [id, userId, visibilitySettings, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        fullName:
+          type: string
+        nickname:
+          type: string
+        location:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        summary:
+          type: string
+        githubUrl:
+          type: string
+          format: uri
+        zennUrl:
+          type: string
+          format: uri
+        qiitaUrl:
+          type: string
+          format: uri
+        websiteUrl:
+          type: string
+          format: uri
+        preferredWorkStyle:
+          type: string
+        visibilitySettings:
+          type: object
+          additionalProperties:
+            type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    EmploymentHistory:
+      type: object
+      required: [id, userId, companyName, employmentType, startDate, sortOrder, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        companyName:
+          type: string
+        employmentType:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: [string, 'null']
+          format: date
+        note:
+          type: string
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Project:
+      type: object
+      required: [id, userId, employmentHistoryId, name, startDate, role, teamSize, status, sortOrder, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        employmentHistoryId:
+          type: string
+        name:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: [string, 'null']
+          format: date
+        overview:
+          type: string
+        role:
+          type: string
+        teamSize:
+          type: integer
+        status:
+          type: string
+          enum: [draft, published]
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProjectContribution:
+      type: object
+      required: [id, projectId, phase, achievement, sortOrder, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        phase:
+          type: string
+        achievement:
+          type: string
+        improvement:
+          type: string
+        note:
+          type: string
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Skill:
+      type: object
+      required: [id, userId, name, category, sourceType, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        proficiencyLevel:
+          type: string
+        yearsOfExperience:
+          type: number
+        sourceType:
+          type: string
+          enum: [manual, project]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ResumeVariant:
+      type: object
+      required: [id, userId, name, visibilitySettings, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        name:
+          type: string
+        headline:
+          type: string
+        summary:
+          type: string
+        visibilitySettings:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ResumeVariantProject:
+      type: object
+      required: [resumeVariantId, projectId, sortOrder]
+      properties:
+        resumeVariantId:
+          type: string
+        projectId:
+          type: string
+        sortOrder:
+          type: integer
+    AuthResponse:
+      type: object
+      required: [user, accessToken]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        accessToken:
+          type: string
+    RegisterRequest:
+      type: object
+      required: [email, password, displayName]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        displayName:
+          type: string
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    ProfileUpdateRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+        nickname:
+          type: string
+        location:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        summary:
+          type: string
+        githubUrl:
+          type: string
+          format: uri
+        zennUrl:
+          type: string
+          format: uri
+        qiitaUrl:
+          type: string
+          format: uri
+        websiteUrl:
+          type: string
+          format: uri
+        preferredWorkStyle:
+          type: string
+        visibilitySettings:
+          type: object
+          additionalProperties:
+            type: boolean
+    EmploymentHistoryUpsertRequest:
+      type: object
+      required: [companyName, employmentType, startDate]
+      properties:
+        companyName:
+          type: string
+        employmentType:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: [string, 'null']
+          format: date
+        note:
+          type: string
+        sortOrder:
+          type: integer
+    ProjectUpsertRequest:
+      type: object
+      required: [employmentHistoryId, name, startDate]
+      properties:
+        employmentHistoryId:
+          type: string
+        name:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: [string, 'null']
+          format: date
+        overview:
+          type: string
+        role:
+          type: string
+        teamSize:
+          type: integer
+        status:
+          type: string
+          enum: [draft, published]
+        sortOrder:
+          type: integer
+    SortOrderRequest:
+      type: object
+      required: [sortOrder]
+      properties:
+        sortOrder:
+          type: integer
+    ProjectContributionUpsertRequest:
+      type: object
+      required: [phase, achievement]
+      properties:
+        phase:
+          type: string
+        achievement:
+          type: string
+        improvement:
+          type: string
+        note:
+          type: string
+        sortOrder:
+          type: integer
+    SkillUpsertRequest:
+      type: object
+      required: [name, category]
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        proficiencyLevel:
+          type: string
+        yearsOfExperience:
+          type: number
+        sourceType:
+          type: string
+          enum: [manual, project]
+    ProjectSkillsReplaceRequest:
+      type: object
+      required: [skillIds]
+      properties:
+        skillIds:
+          type: array
+          items:
+            type: string
+    ResumeVariantUpsertRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        headline:
+          type: string
+        summary:
+          type: string
+        visibilitySettings:
+          type: object
+          additionalProperties: true
+    DuplicateResumeVariantRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+    ResumeVariantProjectsReplaceRequest:
+      type: object
+      required: [projects]
+      properties:
+        projects:
+          type: array
+          items:
+            type: object
+            required: [projectId, sortOrder]
+            properties:
+              projectId:
+                type: string
+              sortOrder:
+                type: integer
+    ResumePreviewResponse:
+      type: object
+      required: [profile, employmentHistories, projects, skills, resumeVariant]
+      properties:
+        profile:
+          $ref: '#/components/schemas/Profile'
+        employmentHistories:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmploymentHistory'
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/Skill'
+        resumeVariant:
+          $ref: '#/components/schemas/ResumeVariant'
+    DashboardResponse:
+      type: object
+      required: [profileStatus, employmentHistoryCount, projectCount, skillCount, recentResumeVariants]
+      properties:
+        profileStatus:
+          type: string
+          enum: [empty, incomplete, completed]
+        employmentHistoryCount:
+          type: integer
+        projectCount:
+          type: integer
+        skillCount:
+          type: integer
+        recentResumeVariants:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResumeVariant'
