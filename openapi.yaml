@@ -6,12 +6,14 @@ info:
   description: |
     個人のWebエンジニア向け経歴書管理システムのMVP APIです。
     案件中心で経歴を管理し、応募先ごとの経歴書バリエーション作成と出力を提供します。
+    MVPの認証方式は Cookie ベースの SessionAuth を主軸とします。
+    BearerAuth は将来のモバイルアプリや外部API連携に備えた拡張用です。
 servers:
   - url: /api
     description: Relative API base path
 security:
-  - BearerAuth: []
   - SessionAuth: []
+  - BearerAuth: []
 tags:
   - name: Auth
   - name: Profile
@@ -44,11 +46,17 @@ paths:
                   displayName: sky0621
       responses:
         '201':
-          description: Registered successfully
+          description: Registered successfully and session created
+          headers:
+            Set-Cookie:
+              description: HttpOnly session cookie
+              schema:
+                type: string
+                example: session=opaque-session-id; Path=/; HttpOnly; Secure; SameSite=Lax
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
+                $ref: '#/components/schemas/AuthSessionResponse'
               examples:
                 success:
                   value:
@@ -58,7 +66,9 @@ paths:
                       displayName: sky0621
                       createdAt: '2025-04-16T00:00:00Z'
                       updatedAt: '2025-04-16T00:00:00Z'
-                    accessToken: jwt-token-example
+                    session:
+                      authenticated: true
+                      expiresAt: '2025-04-23T00:00:00Z'
         '400':
           $ref: '#/components/responses/BadRequest'
   /auth/login:
@@ -80,11 +90,17 @@ paths:
                   password: strong-password
       responses:
         '200':
-          description: Logged in successfully
+          description: Logged in successfully and session created
+          headers:
+            Set-Cookie:
+              description: HttpOnly session cookie
+              schema:
+                type: string
+                example: session=opaque-session-id; Path=/; HttpOnly; Secure; SameSite=Lax
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
+                $ref: '#/components/schemas/AuthSessionResponse'
               examples:
                 success:
                   value:
@@ -94,7 +110,9 @@ paths:
                       displayName: sky0621
                       createdAt: '2025-04-16T00:00:00Z'
                       updatedAt: '2025-04-16T00:00:00Z'
-                    accessToken: jwt-token-example
+                    session:
+                      authenticated: true
+                      expiresAt: '2025-04-23T00:00:00Z'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -103,16 +121,31 @@ paths:
     post:
       tags: [Auth]
       summary: Logout
+      description: Clear the server-side session and expire the session cookie.
       operationId: logoutUser
       responses:
         '200':
-          $ref: '#/components/responses/Ok'
+          description: Logged out successfully
+          headers:
+            Set-Cookie:
+              description: Expired session cookie
+              schema:
+                type: string
+                example: session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    message: logged_out
         '401':
           $ref: '#/components/responses/Unauthorized'
   /auth/me:
     get:
       tags: [Auth]
-      summary: Get current user
+      summary: Get current user from active session
       operationId: getCurrentUser
       responses:
         '200':
@@ -1615,14 +1648,16 @@ paths:
           $ref: '#/components/responses/Unauthorized'
 components:
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
     SessionAuth:
       type: apiKey
+      description: Primary MVP authentication using an HttpOnly session cookie.
       in: cookie
       name: session
+    BearerAuth:
+      type: http
+      description: Optional future authentication for mobile apps or external API clients.
+      scheme: bearer
+      bearerFormat: JWT
   parameters:
     EmploymentHistoryId:
       in: path
@@ -1695,7 +1730,7 @@ components:
                   field: email
                   reason: invalid format
     Unauthorized:
-      description: Authentication required or invalid
+      description: Authentication required or invalid session
       content:
         application/json:
           schema:
@@ -1705,6 +1740,9 @@ components:
               value:
                 code: unauthorized
                 message: Authentication required
+                details:
+                  authType: session
+                  reason: missing_or_expired_session
     NotFound:
       description: Resource not found
       content:
@@ -1941,6 +1979,23 @@ components:
           type: string
         sortOrder:
           type: integer
+    AuthSession:
+      type: object
+      required: [authenticated, expiresAt]
+      properties:
+        authenticated:
+          type: boolean
+        expiresAt:
+          type: string
+          format: date-time
+    AuthSessionResponse:
+      type: object
+      required: [user, session]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        session:
+          $ref: '#/components/schemas/AuthSession'
     AuthResponse:
       type: object
       required: [user, accessToken]
