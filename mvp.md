@@ -103,4 +103,5 @@
 - エンティティ設計、想定リレーション、設計メモは `entities.md` を参照
 - API一覧は `apis.md` を参照
 - 正式な API 定義は `openapi.yaml` を参照
+- アーキテクチャ概要は `architecture.md` を参照
 - 認証方式の採用理由は `auth-strategy.md` を参照
